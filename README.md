@@ -1,5 +1,9 @@
 # swipe-interaction
 
+[![npm version](https://img.shields.io/npm/v/swipe-interaction.svg)](https://www.npmjs.com/package/swipe-interaction)
+[![CI](https://github.com/chester-hill-solutions/swipe-interaction/actions/workflows/ci.yml/badge.svg)](https://github.com/chester-hill-solutions/swipe-interaction/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Horizontal row swipe gestures for touch and pointer input in React.
 
 Built for list rows where a quick left or right swipe should trigger an action without fighting vertical scroll. The hook tracks gestures on `window` after intent is confirmed, clamps drag offset for visual feedback, and suppresses accidental clicks after a swipe.
@@ -11,6 +15,8 @@ npm install swipe-interaction
 ```
 
 **Peer dependency:** React 18 or 19.
+
+See the [interactive demo](https://chester-hill-solutions.github.io/swipe-interaction/) or run `npm run demo:dev` locally.
 
 ## Quick start
 
@@ -125,10 +131,25 @@ const result = useHorizontalSwipeGesture({
 | `allowedDirections` | `["left", "right"]` | Restrict which swipe directions can commit. Use `["left"]` for delete/archive-style actions. |
 | `onSwipeCommit` | — | Called on release when commit thresholds are met and the direction is allowed. Required for gesture handling to activate. |
 | `isExcludedTarget` | `isDefaultSwipeExcludedTarget` | Return `true` to skip starting a swipe from that target. Default excludes `button`, `input`, `textarea`, `select`, `label`, and `[contenteditable="true"]`. Links (`a`) are not excluded so row links can still participate in swipe affordances. |
+| `thresholds` | defaults from exported constants | Override commit, clamp, reveal, and horizontal-intent thresholds. |
+| `onSwipeStart` | — | Called when horizontal intent locks. |
+| `onSwipeCancel` | — | Called when the gesture is abandoned or released below commit threshold. |
+| `onDragChange` | — | Called whenever `dragDx` changes. |
 
 ### Wrapper hook pattern
 
-For a single-direction API, wrap the hook and map `dragDx` to a positive distance:
+For the common left-only row case, use `useLeftSwipeRow`:
+
+```tsx
+import { useLeftSwipeRow } from "swipe-interaction";
+
+const { swipeSurfaceProps, onClickCapture, dragLeftPx, isDragging } = useLeftSwipeRow({
+  enabled: true,
+  onCommit: () => submitQuickAction(),
+});
+```
+
+You can also wrap `useHorizontalSwipeGesture` directly:
 
 ```tsx
 import {
@@ -165,6 +186,8 @@ Pure functions for thresholds, intent detection, and drag visuals. Useful in tes
 | Function | Purpose |
 | --- | --- |
 | `leftDragPxFromDx(dragDx)` | Positive left drag distance, or `null` if not dragging left. |
+| `rightDragPxFromDx(dragDx)` | Positive right drag distance, or `null` if not dragging right. |
+| `dragDistanceForDirection(dragDx, direction)` | Positive drag distance for a direction, or `null`. |
 | `clampSwipeDragDx(dx)` | Clamp signed drag to ±`SWIPE_DRAG_CLAMP_PX` (96px). |
 | `shouldShowSwipeDragReveal(dragDx)` | Whether to show edge tint / action label (≥ 24px). |
 
@@ -196,6 +219,41 @@ All thresholds are exported if you want to align custom UI or tests with the hoo
 | `SWIPE_COMMIT_DOMINANCE_RATIO` | 1.1 | Horizontal must dominate vertical by this factor to commit. |
 | `SWIPE_DRAG_TINT_MIN_DX_PX` | 24 | Minimum drag before showing reveal UI. |
 | `SWIPE_DRAG_CLAMP_PX` | 96 | Maximum visual drag offset. |
+
+Import pure helpers without React via:
+
+```ts
+import { shouldCommitSwipe } from "swipe-interaction/gesture";
+```
+
+## When to use
+
+- List rows with quick actions
+- Mobile-first workflows where swipe is faster than opening a menu
+- Rows that need drag reveal feedback before commit
+
+## When not to use
+
+- Carousels or pagers
+- Drag-and-drop reordering
+- Full-screen drawers or bottom sheets
+
+## Troubleshooting
+
+- **Row clicks fire after swipe:** wire `onClickCapture` and respect `event.defaultPrevented`.
+- **Reveal layer looks wrong:** ensure the wrapper uses `overflow-hidden`.
+- **Swipe never starts:** confirm `onSwipeCommit` is provided and `enabled` is true.
+- **Buttons still swipe:** customize `isExcludedTarget` for app-specific controls.
+
+## Migration
+
+If you previously used `@paito/swipe-interaction`, switch to:
+
+```bash
+npm install swipe-interaction
+```
+
+and update imports from `@paito/swipe-interaction` to `swipe-interaction`.
 
 ## Full row example
 
@@ -273,7 +331,10 @@ npm install
 npm test
 npm run typecheck
 npm run build
+npm run demo:dev
 ```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for release and PR guidance.
 
 ## License
 

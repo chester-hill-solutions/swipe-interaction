@@ -7,6 +7,7 @@ export {
   SWIPE_MOVE_DEAD_ZONE_PX,
   SWIPE_VERTICAL_INTENT_DOMINANCE_RATIO,
   clampSwipeDragDx,
+  dragDistanceForDirection,
   horizontalIntentForAllowedDirections,
   horizontalSwipeIntent,
   isDefaultSwipeExcludedTarget,
@@ -14,15 +15,25 @@ export {
   leftDragPxFromDx,
   leftSwipeIntent,
   resolveSwipeDirection,
+  resolveSwipeThresholds,
+  rightDragPxFromDx,
   rightSwipeIntent,
   shouldCommitSwipe,
   shouldShowSwipeDragReveal,
   swipeMovementExceedsDeadZone,
   verticalSwipeIntent,
   type SwipeDirection,
+  type SwipeThresholds,
 } from "./gesture.js";
 
 export {
   useHorizontalSwipeGesture,
   type HorizontalSwipeGestureResult,
+  type UseHorizontalSwipeGestureParams,
 } from "./use-horizontal-swipe-gesture.js";
+
+export {
+  useLeftSwipeRow,
+  type LeftSwipeRowResult,
+  type UseLeftSwipeRowParams,
+} from "./use-left-swipe-row.js";

@@ -1,0 +1,41 @@
+name: Bug report
+description: Report unexpected swipe behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device
+      placeholder: Safari iOS 18, Chrome desktop, etc.
+    validations:
+      required: true
+  - type: dropdown
+    id: input-type
+    attributes:
+      label: Input type
+      options:
+        - touch
+        - mouse
+        - pen
+    validations:
+      required: true
+  - type: textarea
+    id: scroll-container
+    attributes:
+      label: Scroll container
+      description: Is the row inside a scrollable list, modal, or nested container?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true

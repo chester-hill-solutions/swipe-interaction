@@ -2,6 +2,13 @@
 
 export type SwipeDirection = "left" | "right";
 
+export type SwipeThresholds = {
+  commitMinDx?: number;
+  dragClampPx?: number;
+  dragRevealMinDx?: number;
+  horizontalIntentMinDx?: number;
+};
+
 /** Max horizontal offset shown while dragging (visual rubber limit). */
 export const SWIPE_DRAG_CLAMP_PX = 96;
 
@@ -23,13 +30,43 @@ export const SWIPE_COMMIT_DOMINANCE_RATIO = 1.1;
 /** Row tint / edge reveal while dragging (below commit threshold). */
 export const SWIPE_DRAG_TINT_MIN_DX_PX = 24;
 
-export function clampSwipeDragDx(dx: number): number {
-  return Math.round(Math.max(-SWIPE_DRAG_CLAMP_PX, Math.min(SWIPE_DRAG_CLAMP_PX, dx)));
+export function resolveSwipeThresholds(
+  thresholds?: SwipeThresholds,
+): Required<SwipeThresholds> {
+  return {
+    commitMinDx: thresholds?.commitMinDx ?? SWIPE_COMMIT_MIN_DX_PX,
+    dragClampPx: thresholds?.dragClampPx ?? SWIPE_DRAG_CLAMP_PX,
+    dragRevealMinDx: thresholds?.dragRevealMinDx ?? SWIPE_DRAG_TINT_MIN_DX_PX,
+    horizontalIntentMinDx:
+      thresholds?.horizontalIntentMinDx ?? SWIPE_HORIZONTAL_INTENT_MIN_DX,
+  };
+}
+
+export function clampSwipeDragDx(
+  dx: number,
+  dragClampPx: number = SWIPE_DRAG_CLAMP_PX,
+): number {
+  return Math.round(Math.max(-dragClampPx, Math.min(dragClampPx, dx)));
 }
 
 export function leftDragPxFromDx(dragDx: number | null): number | null {
   if (dragDx == null || dragDx >= 0) return null;
   return -dragDx;
+}
+
+export function rightDragPxFromDx(dragDx: number | null): number | null {
+  if (dragDx == null || dragDx <= 0) return null;
+  return dragDx;
+}
+
+export function dragDistanceForDirection(
+  dragDx: number | null,
+  direction: SwipeDirection,
+): number | null {
+  if (direction === "left") {
+    return leftDragPxFromDx(dragDx);
+  }
+  return rightDragPxFromDx(dragDx);
 }
 
 export function resolveSwipeDirection(dx: number): SwipeDirection {
@@ -49,16 +86,23 @@ export function swipeMovementExceedsDeadZone(dx: number, dy: number): boolean {
 }
 
 /** Whether release should commit the swipe (pointer up, relative to start). */
-export function shouldCommitSwipe(dx: number, dy: number): boolean {
-  if (Math.abs(dx) < SWIPE_COMMIT_MIN_DX_PX) return false;
+export function shouldCommitSwipe(
+  dx: number,
+  dy: number,
+  commitMinDx: number = SWIPE_COMMIT_MIN_DX_PX,
+): boolean {
+  if (Math.abs(dx) < commitMinDx) return false;
   if (Math.abs(dx) < Math.abs(dy) * SWIPE_COMMIT_DOMINANCE_RATIO) return false;
   return true;
 }
 
 /** Whether to show drag tint / reveal at current signed drag offset. */
-export function shouldShowSwipeDragReveal(dragDx: number | null): boolean {
+export function shouldShowSwipeDragReveal(
+  dragDx: number | null,
+  dragRevealMinDx: number = SWIPE_DRAG_TINT_MIN_DX_PX,
+): boolean {
   if (dragDx == null) return false;
-  return Math.abs(dragDx) >= SWIPE_DRAG_TINT_MIN_DX_PX;
+  return Math.abs(dragDx) >= dragRevealMinDx;
 }
 
 /**
@@ -93,14 +137,15 @@ export function horizontalIntentForAllowedDirections(
   dx: number,
   dy: number,
   allowedDirections: readonly SwipeDirection[],
+  minAbsDx: number = SWIPE_HORIZONTAL_INTENT_MIN_DX,
 ): boolean {
   if (allowedDirections.length === 1 && allowedDirections[0] === "left") {
-    return leftSwipeIntent(dx, dy);
+    return leftSwipeIntent(dx, dy, minAbsDx);
   }
   if (allowedDirections.length === 1 && allowedDirections[0] === "right") {
-    return rightSwipeIntent(dx, dy);
+    return rightSwipeIntent(dx, dy, minAbsDx);
   }
-  return horizontalSwipeIntent(dx, dy);
+  return horizontalSwipeIntent(dx, dy, minAbsDx);
 }
 
 /**

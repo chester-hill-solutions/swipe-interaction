@@ -1,9 +1,21 @@
 {
   "name": "swipe-interaction",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Reusable horizontal row swipe gestures for touch and pointer input",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "react",
+    "swipe",
+    "gesture",
+    "touch",
+    "pointer",
+    "list",
+    "mobile"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chester-hill-solutions/swipe-interaction.git"
@@ -16,6 +28,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./gesture": {
+      "types": "./dist/gesture.d.ts",
+      "import": "./dist/gesture.js"
     }
   },
   "main": "./dist/index.js",
@@ -28,6 +44,8 @@
     "test": "vitest run",
     "verify:exports": "npm run build && node scripts/verify-node-import.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "demo:dev": "vite --config vite.demo.config.ts",
+    "demo:build": "vite build --config vite.demo.config.ts",
     "prepublishOnly": "npm run verify:exports && npm test"
   },
   "peerDependencies": {
@@ -36,10 +54,12 @@
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.0",
     "jsdom": "^29.1.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "typescript": "^5.9.3",
+    "vite": "^8.0.3",
     "vitest": "^4.1.5"
   }
 }

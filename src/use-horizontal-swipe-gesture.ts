@@ -15,22 +15,30 @@ import {
   isDefaultSwipeExcludedTarget,
   isSwipeDirectionAllowed,
   resolveSwipeDirection,
+  resolveSwipeThresholds,
   shouldCommitSwipe,
   swipeMovementExceedsDeadZone,
   verticalSwipeIntent,
   type SwipeDirection,
+  type SwipeThresholds,
 } from "./gesture.js";
+
+export type { SwipeThresholds };
 
 const SWIPE_CLICK_SUPPRESSION_MIN_HORIZONTAL_DX_PX = 14;
 const SWIPE_CLICK_SUPPRESSION_MAX_AGE_MS = 350;
 
 const DEFAULT_ALLOWED_DIRECTIONS: readonly SwipeDirection[] = ["left", "right"];
 
-type UseHorizontalSwipeGestureParams = {
+export type UseHorizontalSwipeGestureParams = {
   enabled: boolean;
   allowedDirections?: readonly SwipeDirection[];
   onSwipeCommit?: (direction: SwipeDirection) => void;
   isExcludedTarget?: (target: EventTarget | null) => boolean;
+  thresholds?: SwipeThresholds;
+  onSwipeStart?: (direction: SwipeDirection | null) => void;
+  onSwipeCancel?: () => void;
+  onDragChange?: (dragDx: number | null) => void;
 };
 
 export type HorizontalSwipeGestureResult = {
@@ -52,9 +60,16 @@ export function useHorizontalSwipeGesture({
   allowedDirections = DEFAULT_ALLOWED_DIRECTIONS,
   onSwipeCommit,
   isExcludedTarget = isDefaultSwipeExcludedTarget,
+  thresholds,
+  onSwipeStart,
+  onSwipeCancel,
+  onDragChange,
 }: UseHorizontalSwipeGestureParams): HorizontalSwipeGestureResult {
   const allowedDirectionsRef = useRef(allowedDirections);
   allowedDirectionsRef.current = allowedDirections;
+
+  const thresholdsRef = useRef(resolveSwipeThresholds(thresholds));
+  thresholdsRef.current = resolveSwipeThresholds(thresholds);
 
   const swipeActiveInputRef = useRef<"pointer" | "touch" | null>(null);
   const swipePointerRef = useRef<{ id: number; x: number; y: number } | null>(null);
@@ -71,7 +86,28 @@ export function useHorizontalSwipeGesture({
   const onSwipeCommitRef = useRef(onSwipeCommit);
   onSwipeCommitRef.current = onSwipeCommit;
 
+  const onSwipeStartRef = useRef(onSwipeStart);
+  onSwipeStartRef.current = onSwipeStart;
+
+  const onSwipeCancelRef = useRef(onSwipeCancel);
+  onSwipeCancelRef.current = onSwipeCancel;
+
+  const onDragChangeRef = useRef(onDragChange);
+  onDragChangeRef.current = onDragChange;
+
   const [dragDx, setDragDx] = useState<number | null>(null);
+
+  const emitDragChange = useCallback((nextDragDx: number | null) => {
+    onDragChangeRef.current?.(nextDragDx);
+  }, []);
+
+  const updateDragDx = useCallback(
+    (nextDragDx: number | null) => {
+      setDragDx(nextDragDx);
+      emitDragChange(nextDragDx);
+    },
+    [emitDragChange],
+  );
 
   const clearSwipeClickSuppressionTimeout = useCallback(() => {
     const timer = swipeClickSuppressionTimeoutRef.current;
@@ -152,7 +188,7 @@ export function useHorizontalSwipeGesture({
       swipeLastTrackedDxRef.current = 0;
       swipeHadHorizontalMovementRef.current = false;
       swipeSurfaceElRef.current = null;
-      setDragDx(null);
+      updateDragDx(null);
     };
 
     const shouldSuppressClickAfterSwipe = (
@@ -185,8 +221,9 @@ export function useHorizontalSwipeGesture({
       const trackedDx = swipeLastTrackedDxRef.current;
       const hadHorizontalMovement = swipeHadHorizontalMovementRef.current;
       const allowed = allowedDirectionsRef.current;
+      const resolvedThresholds = thresholdsRef.current;
 
-      setDragDx(null);
+      updateDragDx(null);
       swipeActiveInputRef.current = null;
       swipePointerRef.current = null;
       swipeTouchRef.current = null;
@@ -202,13 +239,17 @@ export function useHorizontalSwipeGesture({
       const commit = onSwipeCommitRef.current;
 
       if (
-        shouldCommitSwipe(dx, dy) &&
+        shouldCommitSwipe(dx, dy, resolvedThresholds.commitMinDx) &&
         isSwipeDirectionAllowed(direction, allowed) &&
         commit
       ) {
         armSwipeClickSuppression();
         commit(direction);
         return;
+      }
+
+      if (directionBefore === "horizontal") {
+        onSwipeCancelRef.current?.();
       }
 
       if (shouldSuppressClickAfterSwipe(directionBefore, hadHorizontalMovement, trackedDx)) {
@@ -286,6 +327,10 @@ export function useHorizontalSwipeGesture({
 
       clearSwipeInteractionState();
 
+      if (directionBefore === "horizontal") {
+        onSwipeCancelRef.current?.();
+      }
+
       if (shouldSuppressClickAfterSwipe(directionBefore, hadHorizontalMovement, trackedDx)) {
         armSwipeClickSuppression();
       }
@@ -305,6 +350,10 @@ export function useHorizontalSwipeGesture({
 
       clearSwipeInteractionState(event.pointerId);
 
+      if (directionBefore === "horizontal") {
+        onSwipeCancelRef.current?.();
+      }
+
       if (shouldSuppressClickAfterSwipe(directionBefore, hadHorizontalMovement, trackedDx)) {
         armSwipeClickSuppression();
       }
@@ -312,17 +361,31 @@ export function useHorizontalSwipeGesture({
 
     const trackDrag = (dx: number) => {
       const allowed = allowedDirectionsRef.current;
+      const resolvedThresholds = thresholdsRef.current;
       const direction = resolveSwipeDirection(dx);
       if (dx !== 0 && !isSwipeDirectionAllowed(direction, allowed)) {
         swipeLastTrackedDxRef.current = 0;
-        setDragDx(null);
+        updateDragDx(null);
         return;
       }
 
-      const clampedDx = clampSwipeDragDx(dx);
+      const clampedDx = clampSwipeDragDx(dx, resolvedThresholds.dragClampPx);
       swipeLastTrackedDxRef.current = clampedDx;
       swipeHadHorizontalMovementRef.current = clampedDx !== 0;
-      setDragDx(clampedDx === 0 ? null : clampedDx);
+      updateDragDx(clampedDx === 0 ? null : clampedDx);
+    };
+
+    const lockHorizontalSwipe = (dx: number, pointerId: number | null) => {
+      swipeDirectionRef.current = "horizontal";
+      onSwipeStartRef.current?.(resolveSwipeDirection(dx));
+      if (pointerId == null) return;
+      const surf = swipeSurfaceElRef.current;
+      if (!surf) return;
+      try {
+        surf.setPointerCapture(pointerId);
+      } catch {
+        // WebKit may reject; window listeners continue to drive the gesture.
+      }
     };
 
     const onPointerDownCapture = (e: ReactPointerEvent<HTMLElement>) => {
@@ -369,19 +432,19 @@ export function useHorizontalSwipeGesture({
 
           if (verticalSwipeIntent(dx, dy)) {
             swipeDirectionRef.current = "vertical";
+            onSwipeCancelRef.current?.();
             clearSwipeInteractionState(pointerId);
             return;
           }
-          if (horizontalIntentForAllowedDirections(dx, dy, allowedDirectionsRef.current)) {
-            swipeDirectionRef.current = "horizontal";
-            const surf = swipeSurfaceElRef.current;
-            if (surf) {
-              try {
-                surf.setPointerCapture(pointerId);
-              } catch {
-                // WebKit may reject; window listeners continue to drive the gesture.
-              }
-            }
+          if (
+            horizontalIntentForAllowedDirections(
+              dx,
+              dy,
+              allowedDirectionsRef.current,
+              thresholdsRef.current.horizontalIntentMinDx,
+            )
+          ) {
+            lockHorizontalSwipe(dx, pointerId);
           } else {
             return;
           }
@@ -457,11 +520,19 @@ export function useHorizontalSwipeGesture({
 
           if (verticalSwipeIntent(dx, dy)) {
             swipeDirectionRef.current = "vertical";
+            onSwipeCancelRef.current?.();
             clearSwipeInteractionState();
             return;
           }
-          if (horizontalIntentForAllowedDirections(dx, dy, allowedDirectionsRef.current)) {
-            swipeDirectionRef.current = "horizontal";
+          if (
+            horizontalIntentForAllowedDirections(
+              dx,
+              dy,
+              allowedDirectionsRef.current,
+              thresholdsRef.current.horizontalIntentMinDx,
+            )
+          ) {
+            lockHorizontalSwipe(dx, null);
           } else {
             return;
           }
@@ -511,7 +582,12 @@ export function useHorizontalSwipeGesture({
     clearSwipeWindowListeners,
     enabled,
     isExcludedTarget,
+    onDragChange,
+    onSwipeCancel,
     onSwipeCommit,
+    onSwipeStart,
+    thresholds,
+    updateDragDx,
   ]);
 
   const swipeSurfaceProps = useMemo((): HTMLAttributes<HTMLElement> | null => {
