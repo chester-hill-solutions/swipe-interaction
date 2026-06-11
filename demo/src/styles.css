@@ -145,8 +145,19 @@ body {
 
 .swipe-reveal.left {
   justify-content: flex-end;
-  background: linear-gradient(90deg, #fff7ed 0%, #fed7aa 100%);
-  color: #9a3412;
+  background: linear-gradient(90deg, #ecfdf5 0%, #86efac 100%);
+  color: #166534;
+}
+
+.swipe-reveal.left.remove {
+  background: linear-gradient(90deg, #fff1f2 0%, #fecdd3 100%);
+  color: #9f1239;
+}
+
+.swipe-reveal.right.save {
+  justify-content: flex-start;
+  background: linear-gradient(270deg, #eff6ff 0%, #93c5fd 100%);
+  color: #1d4ed8;
 }
 
 .swipe-reveal.right {
@@ -187,8 +198,8 @@ body {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.85rem;
-  background: #eff6ff;
-  color: #2563eb;
+  background: #f0fdf4;
+  color: #15803d;
   font-size: 1.1rem;
   flex-shrink: 0;
 }
@@ -227,7 +238,7 @@ body {
   border: 0;
   border-radius: 999px;
   padding: 0.45rem 0.85rem;
-  background: #2563eb;
+  background: #16a34a;
   color: white;
   font: inherit;
   font-size: 0.82rem;

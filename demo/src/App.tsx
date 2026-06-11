@@ -13,7 +13,7 @@ type Toast = {
   message: string;
 };
 
-type RowItem = {
+type GroceryItem = {
   id: string;
   icon: string;
   title: string;
@@ -21,12 +21,14 @@ type RowItem = {
   meta: string;
 };
 
-const STOPS: RowItem[] = [
-  { id: "1", icon: "🏠", title: "14 Oak Street", subtitle: "Not visited yet", meta: "Stop 1" },
-  { id: "2", icon: "🏠", title: "22 Maple Avenue", subtitle: "Follow up tomorrow", meta: "Stop 2" },
-  { id: "3", icon: "🏢", title: "801 Main Street", subtitle: "Apartment buzzer broken", meta: "Stop 3" },
-  { id: "4", icon: "🏠", title: "5 Cedar Lane", subtitle: "Dog in yard", meta: "Stop 4" },
-  { id: "5", icon: "🏠", title: "118 River Road", subtitle: "Requested lit drop", meta: "Stop 5" },
+const GROCERIES: GroceryItem[] = [
+  { id: "1", icon: "🥛", title: "Whole milk", subtitle: "Dairy · 2% or whole", meta: "×1" },
+  { id: "2", icon: "🍞", title: "Sourdough loaf", subtitle: "Bakery · out of stock online", meta: "×1" },
+  { id: "3", icon: "🥚", title: "Free-range eggs", subtitle: "Dairy · dozen", meta: "×2" },
+  { id: "4", icon: "🍎", title: "Honeycrisp apples", subtitle: "Produce · 4–6 count", meta: "×1" },
+  { id: "5", icon: "🥬", title: "Baby spinach", subtitle: "Produce · 5 oz bag", meta: "×1" },
+  { id: "6", icon: "🧀", title: "Sharp cheddar", subtitle: "Dairy · block", meta: "×1" },
+  { id: "7", icon: "🍝", title: "Penne pasta", subtitle: "Pantry · 1 lb", meta: "×2" },
 ];
 
 function useToast() {
@@ -48,7 +50,7 @@ function useToast() {
   return { toasts, pushToast };
 }
 
-function RowContent({ item }: { item: RowItem }) {
+function RowContent({ item }: { item: GroceryItem }) {
   return (
     <>
       <div className="row-icon" aria-hidden>
@@ -63,11 +65,11 @@ function RowContent({ item }: { item: RowItem }) {
   );
 }
 
-function LeftSwipeStopRow({
+function LeftSwipeGroceryRow({
   item,
   onCommit,
 }: {
-  item: RowItem;
+  item: GroceryItem;
   onCommit: (title: string) => void;
 }) {
   const { swipeSurfaceProps, onClickCapture, dragLeftPx, isDragging } = useLeftSwipeRow({
@@ -83,16 +85,16 @@ function LeftSwipeStopRow({
     <div className="row-wrap">
       <div
         className="swipe-row"
-        aria-label={`Swipe left on ${item.title} to mark not home`}
+        aria-label={`Swipe left on ${item.title} to mark got it`}
         onClickCapture={onClickCapture}
         {...(swipeSurfaceProps ?? {})}
       >
         <div
           aria-hidden
-          className={`swipe-reveal left ${revealVisible ? "visible" : "hidden"}`}
+          className={`swipe-reveal left got-it ${revealVisible ? "visible" : "hidden"}`}
         >
-          <span aria-hidden>←</span>
-          Not home
+          <span aria-hidden>✓</span>
+          Got it
         </div>
         <div
           className={`swipe-panel${isDragging ? " dragging" : ""}`}
@@ -114,7 +116,7 @@ function BidirectionalRow({
   item,
   onCommit,
 }: {
-  item: RowItem;
+  item: GroceryItem;
   onCommit: (title: string, direction: SwipeDirection) => void;
 }) {
   const { swipeSurfaceProps, onClickCapture, dragDx, isDragging } =
@@ -139,22 +141,22 @@ function BidirectionalRow({
     <div className="row-wrap">
       <div
         className="swipe-row"
-        aria-label={`Swipe ${item.title} left to archive or right to pin`}
+        aria-label={`Swipe ${item.title} left to remove or right to save for later`}
         onClickCapture={onClickCapture}
         {...(swipeSurfaceProps ?? {})}
       >
         <div
           aria-hidden
-          className={`swipe-reveal left ${revealLeft ? "visible" : "hidden"}`}
+          className={`swipe-reveal left remove ${revealLeft ? "visible" : "hidden"}`}
         >
           <span aria-hidden>←</span>
-          Archive
+          Remove
         </div>
         <div
           aria-hidden
-          className={`swipe-reveal right ${revealRight ? "visible" : "hidden"}`}
+          className={`swipe-reveal right save ${revealRight ? "visible" : "hidden"}`}
         >
-          Pin
+          Save
           <span aria-hidden>→</span>
         </div>
         <div
@@ -168,7 +170,7 @@ function BidirectionalRow({
   );
 }
 
-function DisabledRow({ item }: { item: RowItem }) {
+function DisabledRow({ item }: { item: GroceryItem }) {
   return (
     <div className="row-wrap">
       <div className="swipe-row is-disabled" aria-disabled="true">
@@ -180,7 +182,7 @@ function DisabledRow({ item }: { item: RowItem }) {
   );
 }
 
-function InteractiveRow({
+function QuantityRow({
   onSwipe,
   onTap,
 }: {
@@ -204,10 +206,10 @@ function InteractiveRow({
       >
         <div
           aria-hidden
-          className={`swipe-reveal left ${revealVisible ? "visible" : "hidden"}`}
+          className={`swipe-reveal left got-it ${revealVisible ? "visible" : "hidden"}`}
         >
-          <span aria-hidden>←</span>
-          Quick complete
+          <span aria-hidden>✓</span>
+          Got it
         </div>
         <div
           className={`swipe-panel${isDragging ? " dragging" : ""}`}
@@ -218,16 +220,15 @@ function InteractiveRow({
                 : undefined,
           }}
         >
-          <div className="row-copy">
-            <strong>Row with a button</strong>
-            <span>Swipe the row, or tap the button without swiping.</span>
+          <div className="row-icon" aria-hidden>
+            🫐
           </div>
-          <button
-            type="button"
-            className="row-button"
-            onClick={() => onTap()}
-          >
-            Open
+          <div className="row-copy">
+            <strong>Blueberries</strong>
+            <span>Produce · pint · swipe or tap +</span>
+          </div>
+          <button type="button" className="row-button" onClick={onTap}>
+            +
           </button>
         </div>
       </div>
@@ -238,8 +239,8 @@ function InteractiveRow({
 function ScrollStressRows({ onCommit }: { onCommit: (title: string) => void }) {
   return (
     <>
-      {STOPS.slice(2).map((item) => (
-        <LeftSwipeStopRow key={item.id} item={item} onCommit={onCommit} />
+      {GROCERIES.slice(2).map((item) => (
+        <LeftSwipeGroceryRow key={item.id} item={item} onCommit={onCommit} />
       ))}
     </>
   );
@@ -253,7 +254,7 @@ export function App() {
       <div className="page-intro">
         <h1>swipe-interaction</h1>
         <p>
-          Row swipes that coexist with vertical scroll.{" "}
+          Swipe grocery rows without fighting scroll.{" "}
           <a href="https://github.com/chester-hill-solutions/swipe-interaction">View on GitHub</a>
         </p>
       </div>
@@ -262,51 +263,51 @@ export function App() {
         <div className="phone-screen">
           <div className="phone-status">
             <span>9:41</span>
-            <span>Demo</span>
+            <span>Groceries</span>
           </div>
 
           <header className="app-header">
-            <h2>Today&apos;s route</h2>
-            <p>Swipe a stop for a quick action. Scroll the list normally.</p>
+            <h2>Weekly shop</h2>
+            <p>Swipe left to check off. Scroll the aisle list normally.</p>
           </header>
 
           <div className="list-scroll">
             <div className="section-label">Left swipe · useLeftSwipeRow</div>
-            <LeftSwipeStopRow
-              item={STOPS[0]!}
-              onCommit={(title) => pushToast(`Marked not home · ${title}`)}
+            <LeftSwipeGroceryRow
+              item={GROCERIES[0]!}
+              onCommit={(title) => pushToast(`Checked off · ${title}`)}
             />
 
             <div className="section-label">Both directions</div>
             <BidirectionalRow
               item={{
-                id: "bi",
-                icon: "⭐",
-                title: "Campaign HQ",
-                subtitle: "Swipe either way",
-                meta: "Pinned",
+                id: "coffee",
+                icon: "☕",
+                title: "Colombian coffee",
+                subtitle: "Pantry · whole bean",
+                meta: "×1",
               }}
               onCommit={(title, direction) =>
                 pushToast(
                   direction === "left"
-                    ? `Archived · ${title}`
-                    : `Pinned · ${title}`,
+                    ? `Removed · ${title}`
+                    : `Saved for later · ${title}`,
                 )
               }
             />
 
-            <div className="section-label">Disabled</div>
-            <DisabledRow item={STOPS[1]!} />
+            <div className="section-label">Unavailable</div>
+            <DisabledRow item={GROCERIES[1]!} />
 
-            <div className="section-label">Inner control</div>
-            <InteractiveRow
-              onSwipe={() => pushToast("Quick completed via swipe")}
-              onTap={() => pushToast("Opened details")}
+            <div className="section-label">Quantity button</div>
+            <QuantityRow
+              onSwipe={() => pushToast("Checked off · Blueberries")}
+              onTap={() => pushToast("Added another pint")}
             />
 
             <div className="section-label">Scroll + swipe</div>
             <ScrollStressRows
-              onCommit={(title) => pushToast(`Marked not home · ${title}`)}
+              onCommit={(title) => pushToast(`Checked off · ${title}`)}
             />
           </div>
 
@@ -319,7 +320,7 @@ export function App() {
           </div>
 
           <div className="hint-bar">
-            Pointer and touch supported. Buttons inside rows still receive taps.
+            Swipe rows in a long list. Buttons inside rows still receive taps.
           </div>
         </div>
       </div>
