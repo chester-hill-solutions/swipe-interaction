@@ -14,7 +14,7 @@ import {
   shouldShowSwipeDragReveal,
   swipeMovementExceedsDeadZone,
   verticalSwipeIntent,
-} from "./gesture";
+} from "./gesture.js";
 
 describe("gesture", () => {
   it("clampSwipeDragDx clamps to symmetric limit", () => {

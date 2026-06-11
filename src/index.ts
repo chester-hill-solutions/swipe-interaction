@@ -20,9 +20,9 @@ export {
   swipeMovementExceedsDeadZone,
   verticalSwipeIntent,
   type SwipeDirection,
-} from "./gesture";
+} from "./gesture.js";
 
 export {
   useHorizontalSwipeGesture,
   type HorizontalSwipeGestureResult,
-} from "./use-horizontal-swipe-gesture";
+} from "./use-horizontal-swipe-gesture.js";

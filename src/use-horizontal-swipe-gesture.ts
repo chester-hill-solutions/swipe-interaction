@@ -19,7 +19,7 @@ import {
   swipeMovementExceedsDeadZone,
   verticalSwipeIntent,
   type SwipeDirection,
-} from "./gesture";
+} from "./gesture.js";
 
 const SWIPE_CLICK_SUPPRESSION_MIN_HORIZONTAL_DX_PX = 14;
 const SWIPE_CLICK_SUPPRESSION_MAX_AGE_MS = 350;
