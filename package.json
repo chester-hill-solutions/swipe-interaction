@@ -1,6 +1,6 @@
 {
   "name": "swipe-interaction",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Reusable horizontal row swipe gestures for touch and pointer input",
   "type": "module",
   "license": "MIT",
