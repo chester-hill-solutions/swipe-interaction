@@ -6,12 +6,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wra-sol/swipe-interaction.git"
+    "url": "git+https://github.com/chester-hill-solutions/swipe-interaction.git"
   },
   "bugs": {
-    "url": "https://github.com/wra-sol/swipe-interaction/issues"
+    "url": "https://github.com/chester-hill-solutions/swipe-interaction/issues"
   },
-  "homepage": "https://github.com/wra-sol/swipe-interaction#readme",
+  "homepage": "https://github.com/chester-hill-solutions/swipe-interaction#readme",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
