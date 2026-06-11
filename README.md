@@ -18,6 +18,22 @@ npm install swipe-interaction
 
 See the [interactive demo](https://chester-hill-solutions.github.io/swipe-interaction/) or run `npm run demo:dev` locally.
 
+## Publishing
+
+Releases publish to npm from `.github/workflows/release.yml` when a `v*` tag is pushed.
+
+One-time npm setup:
+
+1. Open the `swipe-interaction` package on npm.
+2. Go to **Package settings** → **Publishing access**.
+3. Add a trusted publisher with:
+   - Owner: `chester-hill-solutions`
+   - Repository: `swipe-interaction`
+   - Workflow: `release.yml`
+   - Environment: leave blank unless GitHub environments are added later
+
+After npm trusts the GitHub workflow, publish a new version by updating `package.json`, committing the change, and pushing a tag such as `v0.2.1`.
+
 ## Quick start
 
 ```tsx

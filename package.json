@@ -4,6 +4,10 @@
   "description": "Reusable horizontal row swipe gestures for touch and pointer input",
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "keywords": [
     "react",
     "swipe",
