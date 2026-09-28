@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Document the Node `^22.22.2 || ^24.15.0 || >=26.0.0` requirement for the development toolchain, and enforce it with `devEngines`. This is a contributor-facing constraint only: the published package has no runtime dependencies, so the `engines.node: ">=18"` range is unchanged and consumers are unaffected.
+
 ## 0.2.0
 
 - Export `UseHorizontalSwipeGestureParams`, `SwipeThresholds`, and `useLeftSwipeRow`.
