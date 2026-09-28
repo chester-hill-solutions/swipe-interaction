@@ -4,6 +4,8 @@ Thanks for contributing to `swipe-interaction`.
 
 ## Development
 
+Requires Node `^22.22.2 || ^24.15.0 || >=26.0.0` (the floor set by `jsdom` and `undici` in the dev toolchain). Older versions install with a warning and may fail the test run. This applies to the toolchain only; the published package has no runtime dependencies and supports whatever your consumers' bundler targets.
+
 ```bash
 npm install
 npm test

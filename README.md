@@ -325,6 +325,9 @@ function ActionRow({
 ## Development
 
 ```bash
+Node `^22.22.2 || ^24.15.0 || >=26.0.0` is required for the development toolchain. The published package has no runtime dependencies, so consumers are not bound by this.
+
+```bash
 git clone https://github.com/chester-hill-solutions/swipe-interaction.git
 cd swipe-interaction
 npm install
