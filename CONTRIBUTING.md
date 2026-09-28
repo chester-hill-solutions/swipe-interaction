@@ -6,6 +6,8 @@ Thanks for contributing to `swipe-interaction`.
 
 Requires Node `^22.22.2 || ^24.15.0 || >=26.0.0` (the floor set by `jsdom` and `undici` in the dev toolchain). Older versions install with a warning and may fail the test run. This applies to the toolchain only; the published package has no runtime dependencies and supports whatever your consumers' bundler targets.
 
+`.nvmrc` pins the version CI uses (`nvm use`). Bumping it is the supported way to move the whole toolchain forward; check the new version against the floor above before bumping.
+
 ```bash
 npm install
 npm test
